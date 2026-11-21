@@ -1,0 +1,4 @@
+module CSNNote {
+    header "CSNNote.h"
+    export *
+}

@@ -1,0 +1,61 @@
+# The framework wrapper, and nothing else.
+#
+# `Package.swift` beside this file is the real project: sources, tests, and
+# what anyone developing the parser builds. This file exists because SwiftPM
+# cannot produce a `.framework`, and an `.xcframework` is what a consumer links:
+# the same sources are compiled once more, here, as a framework target, and
+# `Scripts/build-xcframework.sh` wraps the result.
+#
+# Dynamic, for the reason `rmlines-swift` measured: Xcode embeds a package's
+# binary framework into the application bundle whatever it holds, refuses a
+# static one for want of an `Info.plist`, and one copy of the parser in a process
+# is what keeps `catch let error as SNParseError` catching.
+#
+# Generated project, not committed: run the script.
+name: SNNote
+
+options:
+  bundleIdPrefix: io.altessa
+  deploymentTarget:
+    macOS: "15.0"
+    iOS: "18.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    # What makes the module readable by a later compiler than the one that
+    # built it: the `.swiftinterface` beside the binary module.
+    BUILD_LIBRARY_FOR_DISTRIBUTION: "YES"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CLANG_ENABLE_MODULE_DEBUGGING: "NO"
+
+targets:
+  SNNote:
+    type: framework
+    # One target, three slices — not three targets, so the scheme, the product
+    # name and the module name stay single.
+    supportedDestinations: [macOS, iOS]
+    sources:
+      - path: Sources/SNNote
+      - path: Sources/CSNNote/src
+        includes: ["*.c"]
+    settings:
+      base:
+        GCC_C_LANGUAGE_STANDARD: c2x
+        HEADER_SEARCH_PATHS: "$(SRCROOT)/Sources/CSNNote/include"
+        SWIFT_INCLUDE_PATHS: "$(SRCROOT)/Sources/CSNNote/include"
+        PRODUCT_NAME: SNNote
+        PRODUCT_MODULE_NAME: SNNote
+        DEFINES_MODULE: "YES"
+        SKIP_INSTALL: "NO"
+        DYLIB_INSTALL_NAME_BASE: "@rpath"
+        GENERATE_INFOPLIST_FILE: "YES"
+        PRODUCT_BUNDLE_IDENTIFIER: io.altessa.snnote
+        # 0.0.0 says "not a release". A release overrides it with the tag,
+        # through `Scripts/build-xcframework.sh`.
+        MARKETING_VERSION: "0.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INSTALL_PATH: /Library/Frameworks
+        ARCHS: "$(ARCHS_STANDARD)"
+        ONLY_ACTIVE_ARCH: "NO"

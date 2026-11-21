@@ -1,0 +1,75 @@
+# SwiftLint for SNNote. Run it from the repository root: `swiftlint`.
+#
+# The configuration `rmlines-swift` runs, for the same reason: the mechanical
+# mistakes a reader stops noticing — a force unwrap that takes the whole run
+# down with a signal, `count == 0` where `isEmpty` was meant, a `%` that means
+# `isMultiple(of:)`. The shape of the code is decided in the comments above
+# each declaration, not here.
+
+excluded:
+  - .build
+  - .swiftpm
+  - build
+  - DerivedData
+  - SNNote.xcodeproj
+
+disabled_rules:
+  # Size and complexity. A reverse-engineered binary format is long because the
+  # thing it describes is long: the parser walks a container, a stroke record
+  # and a footer, and each walk is one function with the format's branches in
+  # it. A rule that fires on deliberate work trains people to read past it.
+  - file_length
+  - type_body_length
+  - function_body_length
+  - cyclomatic_complexity
+  - function_parameter_count
+  - nesting
+
+  # House style, shared with the packages beside this one.
+  - trailing_comma
+
+  # The rule pushes `String(decoding:as:)` towards the failable
+  # `String(data:encoding:)`, and this parser wants the total one: bytes that
+  # are not UTF-8 come out as replacement characters rather than as a `nil`
+  # that would lose a page's recognised text.
+  - optional_data_string_conversion
+
+opt_in_rules:
+  - array_init
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - empty_count
+  - empty_string
+  - fatal_error_message
+  - first_where
+  - flatmap_over_map_reduce
+  # Zero force unwraps, product code and tests alike: a `!` in a test ends the
+  # whole run with a signal, so the case that failed is the one thing the
+  # output does not name.
+  - force_unwrapping
+  - joined_default_parameter
+  - last_where
+  - legacy_multiple
+  - literal_expression_end_indentation
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - unavailable_function
+  - unowned_variable_capture
+  - yoda_condition
+
+# `x`, `y`, `a`, `b` — coordinates and the two sides of an `==`.
+identifier_name:
+  min_length: 1
+
+large_tuple:
+  warning: 3
+
+# Prose is exempt — the explanations above declarations are the point of this
+# package. What is left is code, and code at 240 columns is scrolled past.
+line_length:
+  warning: 120
+  ignores_urls: true
+  ignores_comments: true
+  ignores_interpolated_strings: true
